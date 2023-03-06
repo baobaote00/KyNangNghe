@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">test</string>
+    <string name="end_date">End date</string>
+    <string name="start_date">Start date</string>
+    <string name="warranty_date_range">Warranty date range:</string>
+    <string name="calendar">calendar</string>
+    <string name="search">Search</string>
+    <string name="plus">+</string>
+</resources>
