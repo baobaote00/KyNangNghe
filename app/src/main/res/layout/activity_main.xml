@@ -153,8 +153,8 @@
                         android:layout_height="match_parent"
                         android:layout_weight="5"
                         android:autofillHints=""
-                        android:inputType="date"
                         android:hint="@string/start_date"
+                        android:inputType="date"
                         tools:ignore="LabelFor" />
                 </LinearLayout>
 
@@ -177,8 +177,8 @@
                         android:layout_height="match_parent"
                         android:layout_weight="5"
                         android:autofillHints=""
-                        android:inputType="date"
                         android:hint="@string/end_date"
+                        android:inputType="date"
                         tools:ignore="LabelFor" />
 
                 </LinearLayout>
@@ -222,7 +222,7 @@
                 <EditText
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:hint="@string/search"/>
+                    android:hint="@string/search" />
             </LinearLayout>
 
             <LinearLayout
@@ -243,7 +243,19 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="9.5">
+            android:layout_weight="1"
+            android:gravity="center|left">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/asset_list" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="8.5">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view"
@@ -256,36 +268,39 @@
             android:layout_height="0dp"
             android:layout_weight="1.5"
             android:baselineAligned="false">
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:paddingStart="10dp"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
+                android:paddingStart="10dp"
                 tools:ignore="RtlSymmetry">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/calendar"/>
+                    android:text="@string/calendar" />
             </LinearLayout>
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:paddingEnd="10dp"
                 android:gravity="right|center_vertical"
+                android:paddingEnd="10dp"
                 tools:ignore="RtlHardcoded,RtlSymmetry">
+
                 <Button
                     android:id="@+id/button_add"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
                     android:background="@drawable/circle_background"
+                    android:text="@string/plus"
                     android:textColor="@android:color/white"
                     android:textSize="18sp"
-                    android:layout_gravity="center"
-                    android:textStyle="bold"
-                    android:text="@string/plus"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"/>
+                    android:textStyle="bold" />
 
             </LinearLayout>
         </LinearLayout>
