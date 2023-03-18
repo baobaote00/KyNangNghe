@@ -21,7 +21,7 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="5"
+        android:layout_weight="6"
         android:gravity="center|left"
         android:orientation="vertical"
         tools:ignore="RtlHardcoded">
@@ -33,13 +33,13 @@
             android:text="test" />
 
         <TextView
-            android:id="@+id/asset_group"
+            android:id="@+id/department_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="test" />
 
         <TextView
-            android:id="@+id/warranty_date"
+            android:id="@+id/asset_sn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="test" />
@@ -48,23 +48,23 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="5"
+        android:layout_weight="4"
         android:gravity="center">
 
         <Button
-            android:layout_width="40dp"
+            android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
             android:text="" />
 
         <Button
-            android:layout_width="40dp"
+            android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
             android:text="" />
 
         <Button
-            android:layout_width="40dp"
+            android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
             android:text="" />

@@ -40,7 +40,7 @@
                     tools:ignore="NestedWeights,UselessLeaf">
 
                     <Spinner
-                        android:id="@+id/my_spinner_1"
+                        android:id="@+id/department_spinner"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
@@ -148,14 +148,15 @@
                         android:src="@drawable/ic_launcher_background" />
 
                     <EditText
-                        android:id="@+id/test"
+                        android:id="@+id/start_date"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="5"
                         android:autofillHints=""
                         android:hint="@string/start_date"
-                        android:inputType="date"
                         tools:ignore="LabelFor" />
+
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -173,6 +174,7 @@
                         android:src="@drawable/ic_launcher_background" />
 
                     <EditText
+                        android:id="@+id/end_date"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="5"
@@ -220,6 +222,7 @@
                 android:layout_weight="8">
 
                 <EditText
+                    android:id="@+id/search"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:hint="@string/search" />
