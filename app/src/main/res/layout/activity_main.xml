@@ -145,7 +145,7 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:contentDescription="@string/calendar"
-                        android:src="@drawable/ic_launcher_background" />
+                        android:src="@android:drawable/ic_menu_my_calendar" />
 
                     <EditText
                         android:id="@+id/start_date"
@@ -171,7 +171,7 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:contentDescription="@string/calendar"
-                        android:src="@drawable/ic_launcher_background" />
+                        android:src="@android:drawable/ic_menu_my_calendar" />
 
                     <EditText
                         android:id="@+id/end_date"
@@ -213,7 +213,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:contentDescription="@string/calendar"
-                    android:src="@drawable/ic_launcher_background" />
+                    android:src="@android:drawable/ic_input_get" />
             </LinearLayout>
 
             <LinearLayout
@@ -238,7 +238,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:contentDescription="@string/calendar"
-                    android:src="@drawable/ic_launcher_background" />
+                    android:src="@android:drawable/ic_menu_search" />
             </LinearLayout>
 
         </LinearLayout>
@@ -281,9 +281,9 @@
                 tools:ignore="RtlSymmetry">
 
                 <TextView
+                    android:id="@+id/number_of_return_record"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/calendar" />
+                    android:layout_height="wrap_content" />
             </LinearLayout>
 
             <LinearLayout

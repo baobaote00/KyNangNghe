@@ -1,28 +1,27 @@
 package com.gacha.test;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.DatePicker;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.RecyclerView.Adapter;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.Volley;
+import com.gacha.test.Layout.AssetInformationActivity;
 import com.gacha.test.Model.Asset;
 import com.gacha.test.Model.AssetGroup;
 import com.gacha.test.Model.Department;
@@ -36,6 +35,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -44,9 +44,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import static android.widget.AdapterView.*;
+import static android.widget.AdapterView.OnItemSelectedListener;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     private Spinner spDepartment, spAssetGroup, spAccountableParty;
     private DepartmentAdapter adapterDepartment;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private AccountablePartyAdapter adapterAccountableParty;
 
     private RecyclerView recyclerView;
-    private Adapter mAdapter;
+    private MyAdapter mAdapter;
 
     private final List<Asset> dataAsset = new ArrayList<>();
     private final List<Asset> dataAssetToAdapter = new ArrayList<>();
@@ -67,11 +68,18 @@ public class MainActivity extends AppCompatActivity {
     boolean firstTimeDepartment = true;
     boolean firstTimeAssetGroup = true;
     boolean firstTimeEmployee = true;
+    boolean create = true;
 
     private EditText startDate, endDate, search;
-    Calendar calendar = Calendar.getInstance();
+    private final Calendar calendar = Calendar.getInstance();
+    private TextView numberOfRecord;
+
+    private Button buttonAdd;
 
     private Date startDateValue, endDateValue;
+    private final SimpleDateFormat formatWarrantyDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+    private Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +93,19 @@ public class MainActivity extends AppCompatActivity {
         callAPI();
 
         setEvent();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (create) {
+            create = false;
+            return;
+        }
+
+        dataAssetToAdapter.clear();
+        dataAsset.clear();
+        getListAssets();
     }
 
     private void setEvent() {
@@ -106,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    mAdapter.notifyDataSetChanged();
+                    mAdapter.notifyData();
                 } else {
                     firstTimeDepartment = false;
                 }
@@ -128,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
 
                     dataAssetToAdapter.clear();
                     dataAssetToAdapter.addAll(list);
-                    mAdapter.notifyDataSetChanged();
+                    mAdapter.notifyData();
                 } else {
                     firstTimeAssetGroup = false;
                 }
@@ -150,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
 
                     dataAssetToAdapter.clear();
                     dataAssetToAdapter.addAll(list);
-                    mAdapter.notifyDataSetChanged();
+                    mAdapter.notifyData();
                 } else {
                     firstTimeEmployee = false;
                 }
@@ -170,22 +191,30 @@ public class MainActivity extends AppCompatActivity {
                     calendar.set(Calendar.MONTH, monthOfYear);
                     calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-                    // Hiển thị ngày được chọn
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                    //kiểm tra ngày kết thúc đã được set chưa
+                    if (endDateValue != null && endDateValue.compareTo(calendar.getTime()) < 0)
+                        return;
 
-                    if (endDateValue == null) return;
+                    startDateValue = setTimeToEditText(startDate);
 
-                    if (endDateValue.compareTo(calendar.getTime()) < 0) return;
+                    dataAssetToAdapter.clear();
 
-                    startDateValue = calendar.getTime();
-                    startDate.setText(sdf.format(calendar.getTime()));
-
+                    if (endDateValue != null) {
+                        for (int i = 0; i < dataAsset.size(); i++) {
+                            if (dataAsset.get(i).getWarrantyDateFormat().compareTo(startDateValue) > 0
+                                    && dataAsset.get(i).getWarrantyDateFormat().compareTo(endDateValue) < 0) {
+                                dataAssetToAdapter.add(dataAsset.get(i));
+                            }
+                        }
+                        mAdapter.notifyData();
+                    }
                 }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
                 datePickerDialog.show();
             }
         });
 
         endDate.setOnFocusChangeListener((view, b) -> {
+            //nếu focus ra ngoài thì không hiện
             if (b) {
                 DatePickerDialog datePickerDialog = new DatePickerDialog(MainActivity.this, (v, year, monthOfYear, dayOfMonth) -> {
                     // Lưu ngày được chọn vào biến Calendar
@@ -194,35 +223,81 @@ public class MainActivity extends AppCompatActivity {
                     calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
                     // Hiển thị ngày được chọn
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-                    if (startDateValue == null) return;
 
-                    if (startDateValue.compareTo(calendar.getTime()) > 0) return;
+                    //kiểm tra ngày bắt đầu đã được set và ngày bắt đầu nhỏ hơn ngày kết thúc thì hiển thị
+                    if (startDateValue != null && startDateValue.compareTo(calendar.getTime()) > 0)
+                        return;
 
-                    endDateValue = calendar.getTime();
-                    endDate.setText(sdf.format(calendar.getTime()));
+                    endDateValue = setTimeToEditText(endDate);
 
+                    dataAssetToAdapter.clear();
+
+                    if (startDateValue != null) {
+                        Log.d(TAG, "setEvent: " + dataAsset.size());
+                        for (int i = 0; i < dataAsset.size(); i++) {
+                            if (!dataAsset.get(i).getWarrantyDate().isEmpty()
+                                    && dataAsset.get(i).getWarrantyDateFormat().compareTo(startDateValue) > 0
+                                    && dataAsset.get(i).getWarrantyDateFormat().compareTo(endDateValue) < 0) {
+                                dataAssetToAdapter.add(dataAsset.get(i));
+                            }
+                        }
+                        mAdapter.notifyData();
+                    }
                 }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
                 datePickerDialog.show();
             }
         });
 
         //add event listener
-//        edtSearch.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                Log.d("EditText", "Giá trị mới: " + s.toString());
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable s) {
-//            }
-//        });
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() >= 2) {
+                    dataAssetToAdapter.clear();
+
+                    for (int i = 0; i < dataAsset.size(); i++) {
+                        if (dataAsset.get(i).search(s)) {
+                            dataAssetToAdapter.add(dataAsset.get(i));
+                        }
+                    }
+
+                    mAdapter.notifyData();
+                } else {
+                    dataAssetToAdapter.clear();
+                    dataAssetToAdapter.addAll(dataAsset);
+                    mAdapter.notifyData();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        buttonAdd.setOnClickListener(view -> {
+            intent = new Intent(MainActivity.this, AssetInformationActivity.class);
+            intent.putExtra("dataEmployee", (Serializable) dataEmployee);
+            intent.putExtra("dataAssetGroup", (Serializable) dataAssetGroup);
+            intent.putExtra("dataDepartment", (Serializable) dataDepartment);
+            intent.putExtra("dataAsset", (Serializable) dataAsset);
+            startActivity(intent);
+        });
+    }
+
+    /**
+     * hiển thị warranty date
+     *
+     * @param editText edit text hiển thị ngày được chọn
+     * @return ngày được chọn
+     */
+    private Date setTimeToEditText(EditText editText) {
+        editText.setText(formatWarrantyDate.format(calendar.getTime()));
+        return calendar.getTime();
     }
 
     private void callAPI() {
@@ -244,14 +319,15 @@ public class MainActivity extends AppCompatActivity {
         adapterAccountableParty = new AccountablePartyAdapter(dataEmployee, this);
         spAccountableParty.setAdapter(adapterAccountableParty);
 
-
         //config layout manager
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
 
-        mAdapter = new MyAdapter(dataAssetToAdapter, dataDepartmentLocation, dataDepartment);
+        mAdapter = new MyAdapter(this, dataAssetToAdapter, dataDepartment, numberOfRecord, dataAsset);
         recyclerView.setAdapter(mAdapter);
+
+        mAdapter.setData(dataDepartmentLocation, dataEmployee, dataAssetGroup);
     }
 
     private void setControl() {
@@ -268,132 +344,95 @@ public class MainActivity extends AppCompatActivity {
         endDate.setInputType(InputType.TYPE_NULL);
 
         search = findViewById(R.id.search);
-    }
+        numberOfRecord = findViewById(R.id.number_of_return_record);
 
-    private void useVolley(String url, Response.Listener<org.json.JSONArray> listener) {
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-        JsonArrayRequest stringRequest = new JsonArrayRequest(Request.Method.GET, url, null, listener, error -> Log.d("TAG", "onCreate: " + error));
-
-        // Add the request to the RequestQueue.
-        queue.add(stringRequest);
+        buttonAdd = findViewById(R.id.button_add);
     }
 
     private void getListAssets() {
-        String url = getLink("GetAssets");
-        useVolley(url, (JSONArray response) -> {
-            try {
-                for (int i = 0; i < response.length(); i++) {
-                    JSONObject jsonObject = response.getJSONObject(i);
+        String url = CallAPI.getLink("GetAssets");
+        CallAPI.useVolley(this, url, Request.Method.GET, null,
+                (JSONArray response) -> {
+                    try {
+                        for (int i = 0; i < response.length(); i++) {
+                            JSONObject jsonObject = response.getJSONObject(i);
 
-                    Asset asset = new Asset();
-                    asset.setId(jsonObject.getInt("ID"));
-                    asset.setAssetSN(jsonObject.getString("AssetSN"));
-                    asset.setAssetGroupID(jsonObject.getInt("AssetGroupID"));
-                    asset.setAssetName(jsonObject.getString("AssetName"));
-                    asset.setDescription(jsonObject.getString("Description"));
-                    asset.setEmployeeID(jsonObject.getInt("EmployeeID"));
-                    asset.setWarrantyDate(jsonObject.getString("WarrantyDate"));
-                    asset.setDepartmentLocationID(jsonObject.getInt("DepartmentLocationID"));
-
-                    dataAsset.add(asset);
-                }
-                dataAssetToAdapter.addAll(dataAsset);
-                mAdapter.notifyDataSetChanged();
-            } catch (JSONException e) {
-                Log.d("TAG", "getListAssets: " + e.getMessage());
-            }
-        });
+                            dataAsset.add(new Asset(jsonObject));
+                        }
+                        dataAssetToAdapter.addAll(dataAsset);
+                        mAdapter.notifyData();
+                    } catch (JSONException e) {
+                        Log.d("TAG", "getListAssets: " + e.getMessage());
+                    }
+                },
+                error -> Log.d(TAG, "getListAssets:  " + error.getMessage()));
     }
 
     private void getListDepartmentLocation() {
-        String url = getLink("GetDepartmentLocations");
-        useVolley(url, (JSONArray response) -> {
-            try {
-                for (int i = 0; i < response.length(); i++) {
-                    JSONObject jsonObject = response.getJSONObject(i);
+        String url = CallAPI.getLink("GetDepartmentLocations");
+        CallAPI.useVolley(this, url, Request.Method.GET, null,
+                (JSONArray response) -> {
+                    try {
+                        for (int i = 0; i < response.length(); i++) {
+                            JSONObject jsonObject = response.getJSONObject(i);
 
-                    DepartmentLocation departmentLocation = new DepartmentLocation();
-                    departmentLocation.setId(jsonObject.getInt("ID"));
-                    departmentLocation.setDepartmentID(jsonObject.getInt("DepartmentID"));
-                    departmentLocation.setLocationID(jsonObject.getInt("LocationID"));
-                    departmentLocation.setStartDate(jsonObject.getString("StartDate"));
-                    departmentLocation.setEndDate(jsonObject.getString("EndDate"));
-
-                    dataDepartmentLocation.add(departmentLocation);
-                }
-                mAdapter.notifyDataSetChanged();
-            } catch (Exception e) {
-                Log.d("TAG", "getListDepartmentLocation: " + e.getMessage());
-            }
-        });
+                            dataDepartmentLocation.add(new DepartmentLocation(jsonObject));
+                        }
+                        mAdapter.notifyData();
+                    } catch (Exception e) {
+                        Log.d("TAG", "getListDepartmentLocation: " + e.getMessage());
+                    }
+                }, error -> Log.d(TAG, "getListAssets:  " + error.getMessage()));
     }
 
     private void getListDepartment() {
-        String url = getLink("GetDepartments");
-        useVolley(url, (JSONArray response) -> {
+        String url = CallAPI.getLink("GetDepartments");
+        CallAPI.useVolley(this, url, Request.Method.GET, null, (JSONArray response) -> {
             try {
                 for (int i = 0; i < response.length(); i++) {
                     JSONObject jsonObject = response.getJSONObject(i);
 
-                    Department department = new Department();
-                    department.setId(jsonObject.getInt("ID"));
-                    department.setName(jsonObject.getString("Name"));
-
-                    dataDepartment.add(department);
+                    dataDepartment.add(new Department(jsonObject));
                 }
-                mAdapter.notifyDataSetChanged();
+                mAdapter.notifyData();
                 adapterDepartment.notifyDataSetChanged();
             } catch (Exception e) {
                 Log.d("TAG", "getListDepartment: " + e.getMessage());
             }
-        });
+        }, error -> Log.d(TAG, "getListAssets:  " + error.getMessage()));
     }
 
     private void getListAssetGroup() {
-        String url = getLink("GetAssetGroups");
-        useVolley(url, (JSONArray response) -> {
+        String url = CallAPI.getLink("GetAssetGroups");
+        CallAPI.useVolley(this, url, Request.Method.GET, null, (JSONArray response) -> {
             try {
                 for (int i = 0; i < response.length(); i++) {
                     JSONObject jsonObject = response.getJSONObject(i);
 
-                    AssetGroup assetGroup = new AssetGroup();
-                    assetGroup.setId(jsonObject.getInt("ID"));
-                    assetGroup.setName(jsonObject.getString("Name"));
-
-                    dataAssetGroup.add(assetGroup);
+                    dataAssetGroup.add(new AssetGroup(jsonObject));
                 }
                 adapterAssetGroup.notifyDataSetChanged();
             } catch (Exception e) {
                 Log.d("TAG", "getListDepartment: " + e.getMessage());
             }
-        });
+        }, error -> Log.d(TAG, "getListAssets:  " + error.getMessage()));
     }
 
     private void getListEmployee() {
-        String url = getLink("GetEmployees");
-        useVolley(url, (JSONArray response) -> {
+        String url = CallAPI.getLink("GetEmployees");
+        CallAPI.useVolley(this, url, Request.Method.GET, null, (JSONArray response) -> {
             try {
                 for (int i = 0; i < response.length(); i++) {
                     JSONObject jsonObject = response.getJSONObject(i);
 
-                    Employee employee = new Employee();
-                    employee.setId(jsonObject.getInt("ID"));
-                    employee.setFirstName(jsonObject.getString("FirstName"));
-                    employee.setLastName(jsonObject.getString("LastName"));
-                    employee.setPhone(jsonObject.getString("Phone"));
-
-                    dataEmployee.add(employee);
+                    dataEmployee.add(new Employee(jsonObject));
                 }
                 adapterAccountableParty.notifyDataSetChanged();
             } catch (Exception e) {
                 Log.d("TAG", "getListDepartment: " + e.getMessage());
             }
-        });
+        }, error -> Log.d(TAG, "getListAssets:  " + error.getMessage()));
     }
 
-    private String getLink(String link) {
-        String IP = "10.0.0.29";
-        return "http://" + IP + ":3000/" + link;
-    }
+
 }

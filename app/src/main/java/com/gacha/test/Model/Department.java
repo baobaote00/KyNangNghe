@@ -1,6 +1,13 @@
 package com.gacha.test.Model;
 
-public class Department {
+import androidx.annotation.NonNull;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.Serializable;
+
+public class Department implements Serializable {
     private int id;
     private String name;
 
@@ -20,6 +27,14 @@ public class Department {
         this.name = name;
     }
 
-    public Department() {
+    public Department(JSONObject jsonObject) throws JSONException {
+        this.setId(jsonObject.getInt("ID"));
+        this.setName(jsonObject.getString("Name"));
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return name;
     }
 }

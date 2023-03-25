@@ -7,4 +7,9 @@
     <string name="search">Search</string>
     <string name="plus">+</string>
     <string name="asset_list">asset list</string>
+    <string name="asset_name">Asset Name</string>
+    <string name="asset_description_multi_line">Asset Description Multi Line</string>
+    <string name="back">back</string>
+    <string name="edit">edit</string>
+    <string name="expired_warranty">Expired Warranty</string>
 </resources>

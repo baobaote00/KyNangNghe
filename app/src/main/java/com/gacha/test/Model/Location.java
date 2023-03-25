@@ -7,14 +7,9 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 
-public class AssetGroup implements Serializable {
+public class Location implements Serializable {
     private int id;
     private String name;
-
-    public AssetGroup(JSONObject jsonObject) throws JSONException {
-        this.setId(jsonObject.getInt("ID"));
-        this.setName(jsonObject.getString("Name"));
-    }
 
     public int getId() {
         return id;
@@ -30,6 +25,11 @@ public class AssetGroup implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Location(JSONObject jsonObject) throws JSONException {
+        this.setId(jsonObject.getInt("ID"));
+        this.setName(jsonObject.getString("Name"));
     }
 
     @NonNull

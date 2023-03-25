@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:layout_marginBottom="1dp">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -14,8 +15,9 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:scaleType="centerCrop"
             android:contentDescription="@string/calendar"
-            android:src="@drawable/ic_launcher_background" />
+            android:background="#797979" />
     </LinearLayout>
 
     <LinearLayout
@@ -51,23 +53,29 @@
         android:layout_weight="4"
         android:gravity="center">
 
-        <Button
+        <ImageButton
+            android:id="@+id/btn_edit"
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
-            android:text="" />
+            android:src="@android:drawable/ic_menu_edit"
+            android:contentDescription="@string/edit" />
 
-        <Button
+        <ImageButton
+            android:id="@+id/btn_tranfer"
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
-            android:text="" />
+            android:src="@android:drawable/ic_menu_save"
+            android:contentDescription="@string/edit" />
 
-        <Button
+        <ImageButton
+            android:id="@+id/btn_tranfer_history"
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
-            android:text="" />
+            android:src="@android:drawable/ic_menu_more"
+            android:contentDescription="@string/end_date" />
     </LinearLayout>
 
 
